@@ -3,19 +3,15 @@ const app = express();
 const bodyParser = require('body-parser');
 const port = 3000;
 const path = require('path');
+app.use(express.json());
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 const nodemailer = require("nodemailer");
-
-
-
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
 const { google } = require('googleapis');
 const creds = require('./data/sincere-surfer-416614-376c1d829133.json'); 
-
 const createGoogleSheet = async (m_ordes, aov) => {
     const auth = new google.auth.GoogleAuth ({
         keyFile: "credentials.json",
@@ -28,13 +24,11 @@ const createGoogleSheet = async (m_ordes, aov) => {
         auth,
         spreadsheetId: googleSheetsID 
     });
-    
     const getRows = await googleSheets.spreadsheets.values.get({
         auth,
         spreadsheetId: googleSheetsID,
         range: "Data!C2:D2"
     });
-
     const values = [
         [m_ordes, aov],
     ];
@@ -48,9 +42,7 @@ const createGoogleSheet = async (m_ordes, aov) => {
         valueInputOption: 'RAW',
         resource
     });
-
 };
-
 async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
     const auth = new google.auth.GoogleAuth ({
         keyFile: "credentials.json",
@@ -62,7 +54,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
     const sourceSheetId = 0; 
     const currentEpochTime = Math.floor(Date.now() / 1000);
     const newSheetName = `${email}_${currentEpochTime}_sheet`;
-
     // Dup sheet
     const response = await googleSheets.spreadsheets.batchUpdate({
         auth,
@@ -94,8 +85,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         valueInputOption: 'RAW',
         resource
     });
-
-
     //Send email notification
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -105,9 +94,7 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
             user: 'canhminh199x@gmail.com',
             pass: 'rjiwwfxlgeywcqdp',
         },
-    });
-
-    
+    }); 
 //feePercent
     const shopifyplanPrice = function getTransactionFeePercent(shopifyplan) {
         switch (shopifyplan) {
@@ -124,7 +111,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         }
     }
     const feePercent = shopifyplanPrice(parseInt(shopifyplan));
-
     const shopifyplanText = function getshopifyplanText(shopifyplan) {
         switch (shopifyplan) {
             case 29:
@@ -140,9 +126,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         }
     }
     const _shopifyplanText = shopifyplanText(parseInt(shopifyplan));
-
-
-
 //GmvValue
     const GmvValue = function calculateGmvValue(m_ordes, aov) {
         const monthlyOrdersValue = parseFloat(m_ordes);
@@ -150,10 +133,8 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         gmvValue = monthlyOrdersValue * aovValue;
         return gmvValue;
     }
-
     const result = GmvValue(m_ordes, aov);
     console.log("GmvValue: " + result);
-
     //Payment Getway Fee
     const PaymentFee = function calculatePaymentGatewayFee(result) {
         const gmvPrice = result;
@@ -162,7 +143,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
     }
     const PaymentGatewayFee = PaymentFee(result);
     console.log("PaymentGatewayFee: " + PaymentGatewayFee);
-
  //Transaction Fee
     const TransactionFee = function calculateTransactionFees(result, feePercent) {
         const gmvPrice = result;
@@ -173,7 +153,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
 
     const _TransactionFee = TransactionFee(result, feePercent);
     console.log("TransactionFee: " + _TransactionFee);
-
  //Total Fee
     const _calculateTotalFees = function calculateTotalFees(shopifyplan, PaymentGatewayFee,  _TransactionFee) {
         const calculatePaymentGatewayFeePrice = PaymentGatewayFee;
@@ -194,8 +173,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
     }
     const GmvPercentage = _calculateGmvPercentage(result, TotalFees);
     console.log("Gmv Percentage: " + GmvPercentage);
-
-
     const mailOptions = {
         from: 'canhminh199x@gmail.com',
         to: email,
@@ -243,7 +220,6 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         </body>
         </html>`
     };
-
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error('Error sending email:', error);
@@ -254,21 +230,19 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
 
 }
 
-
-
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname,'index.html'))
 });
-
 app.post('/caculator', (req, res) => {
     const { monthlyorders, aov, email, shopifyplan } = req.body;
     createSheetCopy(monthlyorders, aov, email, shopifyplan);
     res.send(`Successfully, please check your email to see the results`)
-    
 });
-
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
-
-
