@@ -177,15 +177,7 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
         from: 'canhminh199x@gmail.com',
         to: email,
         subject: 'Shopify Costs',
-        html: `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Shopify Plus Costs Caculator</title>
-            <link rel="stylesheet" href="/index.css">
-        </head>
-        <body>
+        html: `
             <div class="caculatorContainer">
                 <div class="caculatorHeader">
                     <h2 style="color: #000"> Shopify Costs Caculator Resulst</h2>
@@ -215,10 +207,7 @@ async function  createSheetCopy(m_ordes, aov, email, shopifyplan) {
                         <p style="margin:2px 0;">${GmvPercentage}%</p>
                     </div>
                 </div>    
-            </div>
-           
-        </body>
-        </html>`
+            </div>`
     };
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
