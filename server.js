@@ -263,7 +263,7 @@ app.get('/', (req, res) => {
 app.post('/caculator', (req, res) => {
     const { monthlyorders, aov, email, shopifyplan } = req.body;
     createSheetCopy(monthlyorders, aov, email, shopifyplan);
-    res.send('Successfully created')
+    res.send(`Successfully, please check your email to see the results`)
     
 });
 
