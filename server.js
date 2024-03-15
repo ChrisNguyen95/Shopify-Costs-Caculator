@@ -230,7 +230,6 @@ app.get('/', (req, res) => {
 app.post('/caculator', (req, res) => {
     const { monthlyorders, aov, email, shopifyplan } = req.body;
     createSheetCopy(monthlyorders, aov, email, shopifyplan);
-    res.send(`Successfully, please check your email to see the results`)
 });
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
